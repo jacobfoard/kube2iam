@@ -44,7 +44,7 @@ type Server struct {
 	DefaultIAMRole          string
 	IAMRoleKey              string
 	MetadataAddress         string
-	HostInterface           string
+	HostInterfaces          []string
 	HostIP                  string
 	NamespaceKey            string
 	LogLevel                string

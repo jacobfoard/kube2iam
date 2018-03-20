@@ -26,7 +26,7 @@ func addFlags(s *server.Server, fs *pflag.FlagSet) {
 	fs.BoolVar(&s.AddIPTablesRule, "iptables", false, "Add iptables rule (also requires --host-ip)")
 	fs.BoolVar(&s.AutoDiscoverBaseArn, "auto-discover-base-arn", false, "Queries EC2 Metadata to determine the base ARN")
 	fs.BoolVar(&s.AutoDiscoverDefaultRole, "auto-discover-default-role", false, "Queries EC2 Metadata to determine the default Iam Role and base ARN, cannot be used with --default-role, overwrites any previous setting for --base-role-arn")
-	fs.StringVar(&s.HostInterface, "host-interface", "docker0", "Host interface for proxying AWS metadata")
+	fs.StringArrayVar(&s.HostInterfaces, "host-interfaces", []string{"docker0"}, "Host interfaces for proxying AWS metadata")
 	fs.BoolVar(&s.NamespaceRestriction, "namespace-restrictions", false, "Enable namespace restrictions")
 	fs.StringVar(&s.NamespaceKey, "namespace-key", s.NamespaceKey, "Namespace annotation key used to retrieve the IAM roles allowed (value in annotation should be json array)")
 	fs.StringVar(&s.HostIP, "host-ip", s.HostIP, "IP address of host")
@@ -96,8 +96,10 @@ func main() {
 	}
 
 	if s.AddIPTablesRule {
-		if err := iptables.AddRule(s.AppPort, s.MetadataAddress, s.HostInterface, s.HostIP); err != nil {
-			log.Fatalf("%s", err)
+		for _, val := range s.HostInterfaces {
+			if err := iptables.AddRule(s.AppPort, s.MetadataAddress, val, s.HostIP); err != nil {
+				log.Fatalf("%s", err)
+			}
 		}
 	}
 
